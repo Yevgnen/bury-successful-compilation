@@ -74,16 +74,20 @@ the time to save current-window configuration to variable
 (defun bury-successful-compilation-buffer (buffer string)
   "Bury the compilation BUFFER after a successful compile.
 Argument STRING provided by compilation hooks."
-  (setq bury-successful-compilation-save-windows
-	(and
-	 (equal 'compilation-mode major-mode)
-	 (string-match "finished" string)
-	 (not (search-forward "warning" nil t))))
-  (when bury-successful-compilation-save-windows
-    (ignore-errors
-      (jump-to-register
-       bury-successful-compilation-precompile-window-state))
-    (message "Compilation successful.")))
+  (if (get-buffer-window)
+      (progn
+        (setq bury-successful-compilation-save-windows
+	          (and
+	           (equal 'compilation-mode major-mode)
+	           (string-match "finished" string)
+	           (not (search-forward "warning" nil t))))
+        (when bury-successful-compilation-save-windows
+          (ignore-errors
+            (jump-to-register
+             bury-successful-compilation-precompile-window-state))
+          (message "Compilation successful.")))
+    ;; If compilation buffer is invisible, do nothing.
+    (setq bury-successful-compilation-precompile-window-state nil)))
 
 (defun bury-successful-compilation-turn-on ()
   "Turn on function `bury-successful-compilation'."
